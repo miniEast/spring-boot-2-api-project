@@ -1,14 +1,24 @@
-package com.company.project.core;
+package com.xsbk.core;
 
 import com.alibaba.fastjson.JSON;
 
 /**
  * 统一API响应结果封装
+ * @author sxd
  */
 public class Result<T> {
+
     private int code;
     private String message;
     private T data;
+
+    public Result() {
+
+    }
+
+    public Result(ResultCode resultCode) {
+        this.code = resultCode.code();
+    }
 
     public Result setCode(ResultCode resultCode) {
         this.code = resultCode.code();

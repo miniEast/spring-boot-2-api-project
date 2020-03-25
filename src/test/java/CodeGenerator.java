@@ -5,26 +5,27 @@ import org.mybatis.generator.api.MyBatisGenerator;
 import org.mybatis.generator.config.*;
 import org.mybatis.generator.internal.DefaultShellCallback;
 
+import static com.xsbk.core.ProjectConstant.*;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static com.company.project.core.ProjectConstant.*;
-
 /**
  * 代码生成器，根据数据表名称生成对应的Model、Mapper、Service、Controller简化开发。
  */
 public class CodeGenerator {
     //JDBC配置，请修改为你项目的实际配置
-    private static final String JDBC_URL = "jdbc:mysql://localhost:3306/test";
+    private static final String JDBC_URL = "jdbc:mysql://192.168.31.190:3306/xsbk";
     private static final String JDBC_USERNAME = "root";
     private static final String JDBC_PASSWORD = "123456";
-    private static final String JDBC_DIVER_CLASS_NAME = "com.mysql.jdbc.Driver";
+    private static final String JDBC_DIVER_CLASS_NAME = "com.mysql.cj.jdbc.Driver";
 
     private static final String PROJECT_PATH = System.getProperty("user.dir");//项目在硬盘上的基础路径
     private static final String TEMPLATE_FILE_PATH = PROJECT_PATH + "/src/test/resources/generator/template";//模板位置
+    private static final String DB_PREFIX = ""; //数据库前缀
 
     private static final String JAVA_PATH = "/src/main/java"; //java文件路径
     private static final String RESOURCES_PATH = "/src/main/resources";//资源文件路径
@@ -32,8 +33,8 @@ public class CodeGenerator {
     private static final String PACKAGE_PATH_SERVICE = packageConvertPath(SERVICE_PACKAGE);//生成的Service存放路径
     private static final String PACKAGE_PATH_SERVICE_IMPL = packageConvertPath(SERVICE_IMPL_PACKAGE);//生成的Service实现存放路径
     private static final String PACKAGE_PATH_CONTROLLER = packageConvertPath(CONTROLLER_PACKAGE);//生成的Controller存放路径
-
-    private static final String AUTHOR = "CodeGenerator";//@author
+    //@author
+    private static final String AUTHOR = "sxd";
     private static final String DATE = new SimpleDateFormat("yyyy/MM/dd").format(new Date());//@date
 
     public static void main(String[] args) {
@@ -44,17 +45,19 @@ public class CodeGenerator {
     /**
      * 通过数据表名称生成代码，Model 名称通过解析数据表名称获得，下划线转大驼峰的形式。
      * 如输入表名称 "t_user_detail" 将生成 TUserDetail、TUserDetailMapper、TUserDetailService ...
+     *
      * @param tableNames 数据表名称...
      */
     public static void genCode(String... tableNames) {
         for (String tableName : tableNames) {
-            genCodeByCustomModelName(tableName, null);
+            genCodeByCustomModelName(tableName, DB_PREFIX.trim().length() > 0 ? tableNameConvertUpperCamel(tableName.split(DB_PREFIX)[1]) : null);
         }
     }
 
     /**
      * 通过数据表名称，和自定义的 Model 名称生成代码
      * 如输入表名称 "t_user_detail" 和自定义的 Model 名称 "User" 将生成 User、UserMapper、UserService ...
+     *
      * @param tableName 数据表名称
      * @param modelName 自定义的 Model 名称
      */
@@ -102,10 +105,20 @@ public class CodeGenerator {
 
         TableConfiguration tableConfiguration = new TableConfiguration(context);
         tableConfiguration.setTableName(tableName);
-        if (StringUtils.isNotEmpty(modelName))tableConfiguration.setDomainObjectName(modelName);
-        tableConfiguration.setGeneratedKey(new GeneratedKey("id", "Mysql", true, null));
+        if (StringUtils.isNotEmpty(modelName)) tableConfiguration.setDomainObjectName(modelName);
         context.addTableConfiguration(tableConfiguration);
-
+        //        设置属性名称是否与表字段名称相同
+//        tableConfiguration.addProperty("useActualColumnNames","true");
+        tableConfiguration.setGeneratedKey(new GeneratedKey("id", "Mysql", true, null));
+/*
+     //        设置属性名称是否与表字段名称相同
+//        tableConfiguration.addProperty("useActualColumnNames","true");
+//替换字符串
+        ColumnRenamingRule columnRenamingRule = new ColumnRenamingRule();
+        columnRenamingRule.setSearchString(DB_PREFIX);
+        columnRenamingRule.setReplaceString(" ");
+        tableConfiguration.setColumnRenamingRule(columnRenamingRule);
+*/
         List<String> warnings;
         MyBatisGenerator generator;
         try {
@@ -180,8 +193,10 @@ public class CodeGenerator {
             if (!file.getParentFile().exists()) {
                 file.getParentFile().mkdirs();
             }
-            //cfg.getTemplate("controller-restful.ftl").process(data, new FileWriter(file));
-            cfg.getTemplate("controller.ftl").process(data, new FileWriter(file));
+            //      restful.ftl   风格
+            cfg.getTemplate("controller-restful.ftl").process(data, new FileWriter(file));
+            //      普通风格 全post
+//            cfg.getTemplate("controller.ftl").process(data, new FileWriter(file));
 
             System.out.println(modelNameUpperCamel + "Controller.java 生成成功");
         } catch (Exception e) {

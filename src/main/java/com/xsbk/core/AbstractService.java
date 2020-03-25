@@ -1,4 +1,4 @@
-package com.company.project.core;
+package com.xsbk.core;
 
 
 import org.apache.ibatis.exceptions.TooManyResultsException;

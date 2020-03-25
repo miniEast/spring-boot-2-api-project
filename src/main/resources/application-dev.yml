@@ -1,0 +1,20 @@
+# 开发环境配置
+
+spring:
+  # 数据源配置，请修改为你项目的实际配置
+  datasource:
+    url: jdbc:mysql://192.168.31.190:3306/xsbk
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+
+#分页
+pagehelper:
+  helper-dialect: mysql #数据库方言
+  reasonable: true      #分页合理化
+  support-methods-arguments: true #是否支持接口参数来传递分页参数，默认false
+  page-size-zero: true #当设置为true的时候，如果pagesize设置为0（或RowBounds的limit=0），就不执行分页，返回全部结果
+  params: count=countSql
+
+
